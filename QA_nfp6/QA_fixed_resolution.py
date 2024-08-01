@@ -29,11 +29,11 @@ filename = os.path.join(os.path.dirname(__file__), 'inputs', 'input.QA')
 
 nfp = 6
 qs_surfaces    = np.linspace(0,1,10)
-max_mode_array = [1,2,3,4]*2
-rel_step_array = [1e-4,1e-5]*4
-abs_step_array = [1e-6,1e-7]*4
+max_mode_array = [1,2,3,4,5]*2
+rel_step_array = [1e-4,1e-5]*6
+abs_step_array = [1e-6,1e-7]*6
 max_nfev = 25
-maxmodes_mpol_mapping = {1: 5, 2: 5, 3: 5, 4: 5, 5: 6}
+maxmodes_mpol_mapping = {1: 6, 2: 6, 3: 6, 4: 6, 5: 6}
 ftol = 1e-5
 
 aspect_ratio_target = 5

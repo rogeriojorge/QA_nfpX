@@ -1,3 +1,13 @@
+coils_makegrid*
+fieldlines_bsh_*
+.DS_Store*
+*.DS_Store*
+fort.9*
+*_000_000*
+threed*
+parvmecinfo*
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
