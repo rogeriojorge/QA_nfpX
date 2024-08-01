@@ -1,2 +1,2 @@
 # QA_nfpX
-Quasisymmetric stellarators with a variable nnumber of field periods
+Quasisymmetric stellarators with a variable number of field periods
