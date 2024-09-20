@@ -368,10 +368,8 @@ def main(file,name='',figures_folder='.', coils_curves=None, s_plot_ignore=0.2,s
     cbar = plt.colorbar(sm, orientation='horizontal', cax=cax)
     cbar.set_label('K [m^-2]')
 
-    plt.show()
-
-    # if savefig: plt.savefig(os.path.join(figures_folder, name+'_VMEC_3Dplot.png'), bbox_inches = 'tight', pad_inches = 0, dpi=600)
-    # else: plt.show()
+    if savefig: plt.savefig(os.path.join(figures_folder, name+'_VMEC_3Dplot.png'), bbox_inches = 'tight', pad_inches = 0, dpi=600)
+    else: plt.show()
 
     plt.close()
     # exit()
