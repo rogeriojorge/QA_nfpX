@@ -18,6 +18,8 @@ alpha = [0]
 grad_psi_R_psi0 = []
 grad_psi_Z_psi0 = []
 lambda1T_array = []
+max_kappa2_psitotal = []
+gaussian_curvature_psi0 = []
 
 for wout_name in wout_names:
     max_u_dot_grad_phi_times_R = []
@@ -53,8 +55,13 @@ for wout_name in wout_names:
                     title=r'$\kappa_2$';
                     if run_for_psi0: plot_min=-8;plot_max=0
                     else: plot_min=-50;plot_max=50
+                this_curvature = surface.surface_curvatures()[:,:,curv].transpose()
+                if curv == 2 and (not run_for_psi0): # kappa 2, find the maximum of theta for each phi
+                    max_kappa2_psitotal.append(np.argmax(this_curvature, axis=0))
+                elif curv == 1 and (run_for_psi0): # gaussian curvature, plot maximum kappa 2 on top
+                    gaussian_curvature_psi0.append(this_curvature)
                 ax = curv_axes[j,i].imshow(surface.surface_curvatures()[:,:,curv].transpose(), origin='lower', extent=[0,2/nfp,0,2], aspect='auto', cmap=cmap)
-                # ax = curv_axes[j,i].contourf(surface.surface_curvatures()[:,:,curv].transpose(), origin='lower', extent=[0,2*np.pi/nfp,0,2*np.pi], cmap=cmap, levels=np.linspace(plot_min, plot_max, ncontours), vmin=plot_min, vmax=plot_max)
+                # ax = curv_axes[j,i].contourf(this_curvature, origin='lower', extent=[0,2*np.pi/nfp,0,2*np.pi], cmap=cmap, levels=np.linspace(plot_min, plot_max, ncontours), vmin=plot_min, vmax=plot_max)
                 ax.set_clim(plot_min,plot_max)
                 if i==len(nfp_array_curvs)-1:
                     divider = make_axes_locatable(curv_axes[j,i])
@@ -145,3 +152,26 @@ for wout_name in wout_names:
     plt.tight_layout()
     fig_udot.savefig('u_dot_grad'+('_psi_0' if run_for_psi0 else '')+'.pdf', dpi=500)
     plt.close(fig_udot)
+
+fig_ridges_Kpsi0 = plt.figure(4)
+ridges_Kpsi0_fig, ridges_Kpsi0_axes = plt.subplots(1, 4, figsize=(6, 2.0))
+for nn, nfp in enumerate(nfp_array_curvs):
+    ax = ridges_Kpsi0_axes[nn].imshow(gaussian_curvature_psi0[nn], origin='lower', extent=[0,2/nfp,0,2], aspect='auto', cmap=cmap)
+    ax.set_clim(-7,7)
+    if nn==len(nfp_array_curvs)-1:
+        divider = make_axes_locatable(ridges_Kpsi0_axes[nn])
+        cax = divider.append_axes('right', size='5%', pad=0.15)
+        clb = curv_fig.colorbar(ax, cax=cax, orientation='vertical', cmap=cmap)
+        clb.ax.set_title(r'$\mathcal{K}_{\psi_0}$')
+    if nn==0: ridges_Kpsi0_axes[nn].set_ylabel(r'$\theta/\pi$')
+    else: ridges_Kpsi0_axes[nn].set_yticklabels([])
+    ridges_Kpsi0_axes[nn].set_title(r'$\mathregular{n_{fp}}='+f'{nfp}$')
+    if nn < len(max_kappa2_psitotal):
+        max_indices = max_kappa2_psitotal[nn]
+        for phi_index in range(len(max_indices)):
+            max_theta_index = max_indices[phi_index]
+            ridges_Kpsi0_axes[nn].plot(phi_index * (2 / nfp) / nphi, max_theta_index * 2 / ntheta, 'r.-', markersize=1, linewidth=2)
+ridges_Kpsi0_fig.tight_layout()
+# ridges_Kpsi0_fig.subplots_adjust(wspace=0.0, hspace=0.4)
+ridges_Kpsi0_fig.savefig(f'psi0K_ridges_nfp'+''.join(map(str,nfp_array_curvs))+'.pdf', dpi=500)
+plt.close(ridges_Kpsi0_fig)
