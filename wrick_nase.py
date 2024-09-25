@@ -20,6 +20,8 @@ grad_psi_Z_psi0 = []
 lambda1T_array = []
 max_kappa2_psitotal = []
 gaussian_curvature_psi0 = []
+grad_psi_psi0 = []
+grad_psi_psiTotal = []
 
 for wout_name in wout_names:
     max_u_dot_grad_phi_times_R = []
@@ -117,11 +119,13 @@ for wout_name in wout_names:
         if run_for_psi0:
             grad_psi_R_psi0.append(fl.grad_psi_X * fl.cosphi + fl.grad_psi_Y * fl.sinphi)
             grad_psi_Z_psi0.append(fl.grad_psi_Z)
+            grad_psi_psi0.append([fl.grad_psi_X, fl.grad_psi_Y, fl.grad_psi_Z])
         else:
             # grad_psi_R = fl.grad_psi_X * fl.cosphi + fl.grad_psi_Y * fl.sinphi
             # grad_psi_Z = fl.grad_psi_Z
             lambda1T = u_dot_grad_R * grad_psi_Z_psi0[nn] - u_dot_grad_Z * grad_psi_R_psi0[nn]
             lambda1T_array.append(np.mean(np.abs(lambda1T)))
+            grad_psi_psiTotal.append([fl.grad_psi_X, fl.grad_psi_Y, fl.grad_psi_Z])
 
         # # ## Plot u dot grad phi times R
         # plt.figure();plt.imshow(u_dot_grad_phi_times_R[0], origin='lower');plt.xlabel('theta');plt.ylabel('phi');plt.colorbar()
@@ -154,7 +158,7 @@ for wout_name in wout_names:
     plt.close(fig_udot)
 
 fig_ridges_Kpsi0 = plt.figure(4)
-ridges_Kpsi0_fig, ridges_Kpsi0_axes = plt.subplots(1, 4, figsize=(6, 2.0))
+ridges_Kpsi0_fig, ridges_Kpsi0_axes = plt.subplots(1, len(nfp_array_curvs), figsize=(6, 2.0))
 for nn, nfp in enumerate(nfp_array_curvs):
     ax = ridges_Kpsi0_axes[nn].imshow(gaussian_curvature_psi0[nn], origin='lower', extent=[0,2/nfp,0,2], aspect='auto', cmap=cmap)
     ax.set_clim(-7,7)
@@ -175,3 +179,32 @@ ridges_Kpsi0_fig.tight_layout()
 # ridges_Kpsi0_fig.subplots_adjust(wspace=0.0, hspace=0.4)
 ridges_Kpsi0_fig.savefig(f'psi0K_ridges_nfp'+''.join(map(str,nfp_array_curvs))+'.pdf', dpi=500)
 plt.close(ridges_Kpsi0_fig)
+
+grad_psi_psi0 = np.array(grad_psi_psi0)
+grad_psi_psi1 = np.array(grad_psi_psiTotal)-grad_psi_psi0
+fig_ridges_psi0psi1 = plt.figure(5)
+psi0psi1_fig, psi0psi1_axes = plt.subplots(1, len(nfp_array_curvs), figsize=(6, 2.0))
+for nn, nfp in enumerate(nfp_array_curvs):
+    grad_psi0 = np.array(grad_psi_psi0[nn])
+    grad_psi1 = np.array(grad_psi_psi1[nn])
+    grad_psi0_dot_grad_psi1 = (grad_psi0[0]*grad_psi1[0] + grad_psi0[1]*grad_psi1[1] + grad_psi0[2]*grad_psi1[2])[0].transpose()
+    # print(grad_psi0_dot_grad_psi1.shape)
+    ax = psi0psi1_axes[nn].imshow(grad_psi0_dot_grad_psi1, origin='lower', extent=[0,2/nfp,0,2], aspect='auto', cmap=cmap)
+    ax.set_clim(0,0.2)
+    if nn==len(nfp_array_curvs)-1:
+        divider = make_axes_locatable(psi0psi1_axes[nn])
+        cax = divider.append_axes('right', size='5%', pad=0.15)
+        clb = curv_fig.colorbar(ax, cax=cax, orientation='vertical', cmap=cmap)
+        clb.ax.set_title(r'$\nabla {\psi_0} \cdot \nabla {\psi_1}$', fontsize=6)
+    if nn==0: psi0psi1_axes[nn].set_ylabel(r'$\theta/\pi$')
+    else: psi0psi1_axes[nn].set_yticklabels([])
+    psi0psi1_axes[nn].set_title(r'$\mathregular{n_{fp}}='+f'{nfp}$')
+    if nn < len(max_kappa2_psitotal):
+        max_indices = max_kappa2_psitotal[nn]
+        for phi_index in range(len(max_indices)):
+            max_theta_index = max_indices[phi_index]
+            psi0psi1_axes[nn].plot(phi_index * (2 / nfp) / nphi, max_theta_index * 2 / ntheta, 'r.-', markersize=1, linewidth=2)
+psi0psi1_fig.tight_layout()
+# psi0psi1_fig.subplots_adjust(wspace=0.0, hspace=0.4)
+psi0psi1_fig.savefig(f'psi0psi1_nfp'+''.join(map(str,nfp_array_curvs))+'.pdf', dpi=500)
+plt.close(psi0psi1_fig)
