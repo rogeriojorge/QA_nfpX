@@ -13,20 +13,20 @@ from simsopt.objectives import SquaredFlux, QuadraticPenalty
 parent_path = str(Path(__file__).parent.resolve())
 os.chdir(parent_path)
 
-nfp = 7
+nfp = 4
 
-order = 12
-length_target_initial = 4
+order = 14
+length_target_initial = 2.5
 length_weight = 1e-1
 cc_weight = 1e-1
-cs_threshold = 0.1
+cs_threshold = 0.03
 cs_weight = 1e+3
 max_curvature_threshold = 10
 max_curvature_weight = 1e-3
-msc_threshold = 10
+msc_threshold = 24
 msc_weight = 1e-5
 arclength_weight = 5e-8
-R1 = 0.85
+R1 = 0.4 #0.85
 if nfp==1:
     ncoils = 5
     length_target_final = 6.5
@@ -41,10 +41,11 @@ if nfp==3:
     max_curvature_threshold = 6
     cc_threshold = 0.1
 if nfp==4:
-    ncoils = 3
-    length_target_final = 5
-    max_curvature_threshold = 6
-    cc_threshold = 0.06
+    ncoils = 5
+    length_target_final = 3.5
+    max_curvature_threshold = 45
+    msc_threshold = 55
+    cc_threshold = 0.02
     cc_weight = 1e+1
 if nfp==5:
     ncoils = 2
@@ -71,10 +72,10 @@ if nfp==7:
     cc_threshold = 0.04
     cc_weight = 1e+1
 
-MAXITER = 500
+MAXITER = 1000
 
-nphi = 32
-ntheta = 32
+nphi = 48
+ntheta = 48
 
 this_path = os.path.join(parent_path, f'QA_nfp{nfp}')
 os.makedirs(this_path, exist_ok=True)
@@ -126,9 +127,10 @@ Jcs = [LpCurveCurvature(c, 2, max_curvature_threshold) for c in base_curves]
 Jcsdist = CurveSurfaceDistance(curves, s, cs_threshold)
 Jmscs = [MeanSquaredCurvature(c) for c in base_curves]
 Jals = [ArclengthVariation(c) for c in base_curves]
+Jlink = LinkingNumber(curves, 2)
 
 JF = (Jf + length_weight * QuadraticPenalty(sum(Jls), length_target_initial * ncoils, "max") + cc_weight * Jccdist + max_curvature_weight * sum(Jcs)
-     + msc_weight * sum(QuadraticPenalty(J, msc_threshold, "max") for J in Jmscs) + arclength_weight * sum(Jals) + cs_weight * Jcsdist)
+     + msc_weight * sum(QuadraticPenalty(J, msc_threshold, "max") for J in Jmscs) + LinkingNumber(curves, 2) + arclength_weight * sum(Jals) + cs_weight * Jcsdist)
 
 def fun(dofs):
     JF.x = dofs
